@@ -18,7 +18,7 @@ const PROGRAM = {
         priority: "upper_chest",
         track: ["weight","reps","RIR"],
         cues: ["Shoulders down and back", "No shrugging"],
-        gifSearch: "incline dumbbell press chest workout",
+        gifSearch: "incline dumbbell press form",
         variants: null,
       },
       {
@@ -32,7 +32,7 @@ const PROGRAM = {
         track: ["weight","reps"],
         cues: ["Raise out, not up", "Stop at shoulder height", "Neck relaxed"],
         finisherNote: "Last set: 5–8 top-half partials after full reps",
-        gifSearch: "lateral raise shoulder exercise dumbbell",
+        gifSearch: "dumbbell lateral raise shoulder",
         variants: [
           { id: "cable", label: "Cable" },
           { id: "dumbbell", label: "Dumbbell" },
@@ -48,7 +48,7 @@ const PROGRAM = {
         priority: "back",
         track: ["weight","reps"],
         cues: ["Depress scapula before pulling", "Avoid neck tension"],
-        gifSearch: "pull ups back workout gym",
+        gifSearch: "pull up bar exercise form",
         variants: [
           { id: "bodyweight", label: "Bodyweight" },
           { id: "weighted", label: "+Weight" },
@@ -66,7 +66,7 @@ const PROGRAM = {
         track: ["reps"],
         cues: ["Shoulder blades into back pockets", "Thumbs up"],
         note: "Technique exercise. Light load only.",
-        gifSearch: "prone Y raise lower trap exercise",
+        gifSearch: "Y raise exercise gym",
         variants: null,
       },
       {
@@ -79,7 +79,7 @@ const PROGRAM = {
         priority: "core",
         track: ["reps"],
         cues: ["Curl pelvis upward", "No swinging", "Tailbone toward ribs"],
-        gifSearch: "hanging leg raise abs core workout",
+        gifSearch: "hanging leg raise exercise",
         variants: [
           { id: "legs", label: "Legs" },
           { id: "knees", label: "Knees (reg.)" },
@@ -112,7 +112,7 @@ const PROGRAM = {
         priority: "posterior",
         track: ["weight","reps","RIR"],
         cues: ["Hips back", "Ribs down", "Neutral spine"],
-        gifSearch: "romanian deadlift RDL hamstring exercise",
+        gifSearch: "romanian deadlift barbell form",
         variants: null,
       },
       {
@@ -137,7 +137,7 @@ const PROGRAM = {
         priority: "rear_delt",
         track: ["weight","reps"],
         cues: ["Pull to forehead", "Slight pull-apart at end", "No shrugging"],
-        gifSearch: "face pull cable rear delt exercise",
+        gifSearch: "cable face pull exercise",
         variants: null,
       },
       {
@@ -163,7 +163,7 @@ const PROGRAM = {
         track: ["duration"],
         cues: ["Squeeze glutes", "Ribs down", "Pull elbows toward toes"],
         note: "If you can hold >45 sec easily, tension is too low.",
-        gifSearch: "RKC plank hardstyle core exercise",
+        gifSearch: "RKC plank exercise",
         variants: null,
       },
     ],
@@ -591,8 +591,8 @@ function MobilitySection() {
 function HomeScreen({ sessionLog, onStart }) {
   const [bw, setBw] = useState("");
   const [energy, setEnergy] = useState(null);
-  const todayDay = getNextDay(sessionLog);
-  const dayData = PROGRAM[todayDay];
+  const [selectedDay, setSelectedDay] = useState(() => getNextDay(sessionLog));
+  const dayData = PROGRAM[selectedDay];
 
   const weekLog = sessionLog.slice(-7);
   const totalSessions = sessionLog.length;
@@ -601,8 +601,21 @@ function HomeScreen({ sessionLog, onStart }) {
     <div style={{ padding: "0 0 40px" }}>
       {/* Hero */}
       <div style={{ padding: "32px 20px 24px", borderBottom: "1px solid #1a2e1e" }}>
-        <div style={{ fontSize: 10, color: "#4a6e52", letterSpacing: 4, textTransform: "uppercase", marginBottom: 12 }}>
-          Today
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ fontSize: 10, color: "#4a6e52", letterSpacing: 4, textTransform: "uppercase" }}>
+            Today
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {["Day 1", "Day 2"].map(d => (
+              <button key={d} onClick={() => setSelectedDay(d)}
+                style={{
+                  ...pillStyle, fontSize: 10,
+                  background: selectedDay === d ? "#5a9e7222" : "transparent",
+                  color: selectedDay === d ? "#5a9e72" : "#4a6e52",
+                  borderColor: selectedDay === d ? "#5a9e7255" : "#1c2e20",
+                }}>{d}</button>
+            ))}
+          </div>
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 6 }}>
           <h1 style={{ fontSize: 36, fontWeight: 900, color: "#f3f5f2", margin: 0, letterSpacing: "-1px", lineHeight: 1 }}>
@@ -660,7 +673,7 @@ function HomeScreen({ sessionLog, onStart }) {
 
       {/* Start */}
       <div style={{ padding: "28px 20px 0" }}>
-        <button onClick={() => onStart(todayDay, bw, energy)}
+        <button onClick={() => onStart(selectedDay, bw, energy)}
           style={{
             width: "100%", padding: "16px 0", borderRadius: 8,
             background: "#5a9e72", border: "none", color: "#000",
