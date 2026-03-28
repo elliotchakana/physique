@@ -1036,6 +1036,7 @@ function DataScreen() {
 
   const handleExport = () => {
     const ok = exportAllData();
+    if (ok) localStorage.setItem("physique_last_backup", Date.now().toString());
     setStatus(ok ? "Backup downloaded" : "Export failed");
     setTimeout(() => setStatus(null), 3000);
   };
@@ -1125,12 +1126,19 @@ export default function App() {
   const [sessionLog, setSessionLog] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [lastSession, setLastSession] = useState(null);
+  const [backupDue, setBackupDue] = useState(false);
 
   // Load sessions from localStorage + register service worker
   useEffect(() => {
     setSessionLog(getSessions());
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+    // Check if monthly backup is due
+    const lastBackup = localStorage.getItem("physique_last_backup");
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+    if (!lastBackup || Date.now() - Number(lastBackup) > thirtyDays) {
+      setBackupDue(true);
     }
   }, []);
 
@@ -1172,6 +1180,48 @@ export default function App() {
         input[type=number]::-webkit-inner-spin-button { opacity: 0; }
         ::-webkit-scrollbar { width: 0; height: 0; }
       `}</style>
+
+      {/* Monthly backup reminder */}
+      {backupDue && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.4)", zIndex: 999,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 24,
+        }}>
+          <div style={{
+            ...glassCard, background: "rgba(255,255,255,0.95)",
+            padding: 24, maxWidth: 320, width: "100%", textAlign: "center",
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>☁️</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 6 }}>
+              Time to back up
+            </div>
+            <div style={{ fontSize: 12, color: T.textSoft, marginBottom: 20, lineHeight: 1.5 }}>
+              It's been 30+ days since your last backup. Download your data to keep it safe.
+            </div>
+            <button onClick={() => {
+              exportAllData();
+              localStorage.setItem("physique_last_backup", Date.now().toString());
+              setBackupDue(false);
+            }} style={{
+              width: "100%", padding: "12px 0", background: T.green, color: "#fff",
+              border: "none", borderRadius: T.radiusSm, fontSize: 13, fontWeight: 600,
+              cursor: "pointer", marginBottom: 10,
+            }}>
+              Download Backup
+            </button>
+            <button onClick={() => {
+              setBackupDue(false);
+            }} style={{
+              width: "100%", padding: "10px 0", background: "none", color: T.textMuted,
+              border: "none", fontSize: 12, cursor: "pointer",
+            }}>
+              Remind me later
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Nav bar */}
       <div style={{
