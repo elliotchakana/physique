@@ -393,35 +393,30 @@ const pillStyle = {
 
 // ─── EXERCISE IMAGES ──────────────────────────────────────────────────────────
 
-const EXERCISE_IMG_BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises";
-const EXERCISE_IMAGES = {
-  "incline-press": [`${EXERCISE_IMG_BASE}/Incline_Dumbbell_Press/0.jpg`, `${EXERCISE_IMG_BASE}/Incline_Dumbbell_Press/1.jpg`],
-  "lateral-raise": [`${EXERCISE_IMG_BASE}/Cable_Seated_Lateral_Raise/0.jpg`, `${EXERCISE_IMG_BASE}/Cable_Seated_Lateral_Raise/1.jpg`],
-  "pull-ups": [`${EXERCISE_IMG_BASE}/Chin-Up/0.jpg`, `${EXERCISE_IMG_BASE}/Chin-Up/1.jpg`],
-  "prone-y": [`${EXERCISE_IMG_BASE}/Face_Pull/0.jpg`, `${EXERCISE_IMG_BASE}/Face_Pull/1.jpg`],
-  "hanging-leg": [`${EXERCISE_IMG_BASE}/Hanging_Leg_Raise/0.jpg`, `${EXERCISE_IMG_BASE}/Hanging_Leg_Raise/1.jpg`],
-  "rdl": [`${EXERCISE_IMG_BASE}/Barbell_Deadlift/0.jpg`, `${EXERCISE_IMG_BASE}/Barbell_Deadlift/1.jpg`],
-  "bss": [`${EXERCISE_IMG_BASE}/Dumbbell_Lunges/0.jpg`, `${EXERCISE_IMG_BASE}/Dumbbell_Lunges/1.jpg`],
-  "face-pull": [`${EXERCISE_IMG_BASE}/Face_Pull/0.jpg`, `${EXERCISE_IMG_BASE}/Face_Pull/1.jpg`],
-  "rear-delt-fly": [`${EXERCISE_IMG_BASE}/Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench/0.jpg`, `${EXERCISE_IMG_BASE}/Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench/1.jpg`],
-  "rkc-plank": null,
+const EXERCISE_GIFS = {
+  "incline-press": "https://static.exercisedb.dev/media/PG1kcIb.gif",
+  "lateral-raise": "https://static.exercisedb.dev/media/DsgkuIt.gif",
+  "pull-ups": "https://static.exercisedb.dev/media/T2mxWqc.gif",
+  "prone-y": "https://static.exercisedb.dev/media/PbzNu7c.gif",
+  "hanging-leg": "https://static.exercisedb.dev/media/I3tsCnC.gif",
+  "rdl": "https://static.exercisedb.dev/media/rR0LJzx.gif",
+  "bss": "https://static.exercisedb.dev/media/9E25EOx.gif",
+  "face-pull": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull/0.jpg",
+  "rear-delt-fly": "https://static.exercisedb.dev/media/mu5Guxt.gif",
+  "rkc-plank": "https://static.exercisedb.dev/media/VBAWRPG.gif",
 };
 
 function ExerciseImage({ exerciseId }) {
-  const images = EXERCISE_IMAGES[exerciseId];
-  if (!images) return null;
+  const src = EXERCISE_GIFS[exerciseId];
+  if (!src) return null;
   return (
-    <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-      {images.map((src, i) => (
-        <div key={i} style={{
-          flex: 1, borderRadius: T.radiusSm, overflow: "hidden",
-          background: "rgba(255,255,255,0.3)", border: `1px solid ${T.cardBorder}`,
-          aspectRatio: "3/4",
-        }}>
-          <img src={src} alt={`${exerciseId} position ${i + 1}`}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-        </div>
-      ))}
+    <div style={{
+      borderRadius: T.radiusSm, overflow: "hidden",
+      background: "rgba(255,255,255,0.3)", border: `1px solid ${T.cardBorder}`,
+      marginBottom: 14,
+    }}>
+      <img src={src} alt={exerciseId}
+        style={{ width: "100%", display: "block" }} />
     </div>
   );
 }
