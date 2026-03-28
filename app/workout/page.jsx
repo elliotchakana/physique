@@ -232,11 +232,40 @@ function saveSetLog(exerciseId, setData) {
 
 function getLastWeight(exerciseId) {
   const history = getHistory(exerciseId);
-  // find most recent entry that has weight
   for (let i = history.length - 1; i >= 0; i--) {
     if (history[i].weight) return history[i];
   }
   return null;
+}
+
+function getWeightProgression(exerciseId) {
+  const history = getHistory(exerciseId);
+  // group by date (day), take max weight per day
+  const byDay = {};
+  history.forEach(h => {
+    if (!h.weight || !h.date) return;
+    const day = h.date.slice(0, 10);
+    const w = parseFloat(h.weight);
+    if (!byDay[day] || w > byDay[day].weight) {
+      byDay[day] = { date: day, weight: w, reps: parseInt(h.reps) || 0 };
+    }
+  });
+  return Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function getSessions() {
+  try {
+    const raw = localStorage.getItem("physique_sessions");
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveSession(sessionData) {
+  try {
+    const sessions = getSessions();
+    sessions.push(sessionData);
+    localStorage.setItem("physique_sessions", JSON.stringify(sessions.slice(-200)));
+  } catch {}
 }
 
 // ─── REST TIMER ───────────────────────────────────────────────────────────────
@@ -393,6 +422,127 @@ function ExerciseImage({ exerciseId }) {
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
       ))}
+    </div>
+  );
+}
+
+// ─── PROGRESS CHART ───────────────────────────────────────────────────────────
+
+function ProgressChart({ exerciseId, name }) {
+  const data = getWeightProgression(exerciseId);
+  if (data.length < 2) return null;
+
+  const W = 280, H = 100, PAD = 24;
+  const weights = data.map(d => d.weight);
+  const minW = Math.min(...weights), maxW = Math.max(...weights);
+  const range = maxW - minW || 1;
+
+  const points = data.map((d, i) => {
+    const x = PAD + (i / (data.length - 1)) * (W - PAD * 2);
+    const y = H - PAD - ((d.weight - minW) / range) * (H - PAD * 2);
+    return { x, y, ...d };
+  });
+
+  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+  const areaD = pathD + ` L${points[points.length - 1].x},${H - PAD} L${points[0].x},${H - PAD} Z`;
+
+  return (
+    <div style={{ ...glassCard, padding: "14px 16px", marginBottom: 12 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: T.text, marginBottom: 4 }}>{name}</div>
+      <div style={{ fontSize: 10, color: T.textMuted, marginBottom: 8 }}>
+        {weights[0]}kg → {weights[weights.length - 1]}kg
+        {weights[weights.length - 1] > weights[0] && (
+          <span style={{ color: T.green, marginLeft: 6 }}>+{(weights[weights.length - 1] - weights[0]).toFixed(1)}kg</span>
+        )}
+      </div>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
+        <defs>
+          <linearGradient id={`grad-${exerciseId}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={T.green} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={T.green} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {/* grid lines */}
+        {[0, 0.5, 1].map(pct => {
+          const y = H - PAD - pct * (H - PAD * 2);
+          return <line key={pct} x1={PAD} y1={y} x2={W - PAD} y2={y} stroke={T.divider} strokeWidth={1} />;
+        })}
+        <path d={areaD} fill={`url(#grad-${exerciseId})`} />
+        <path d={pathD} fill="none" stroke={T.green} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        {points.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={3} fill={i === points.length - 1 ? T.green : "white"} stroke={T.green} strokeWidth={1.5} />
+        ))}
+        {/* labels */}
+        <text x={PAD} y={H - 6} fontSize={8} fill={T.textMuted}>{data[0].date.slice(5)}</text>
+        <text x={W - PAD} y={H - 6} fontSize={8} fill={T.textMuted} textAnchor="end">{data[data.length - 1].date.slice(5)}</text>
+        <text x={PAD - 4} y={H - PAD + 3} fontSize={8} fill={T.textMuted} textAnchor="end">{minW}</text>
+        <text x={PAD - 4} y={PAD + 3} fontSize={8} fill={T.textMuted} textAnchor="end">{maxW}</text>
+      </svg>
+    </div>
+  );
+}
+
+// ─── PROGRESS SCREEN ──────────────────────────────────────────────────────────
+
+function ProgressScreen() {
+  const allExercises = [
+    ...PROGRAM["Day 1"].exercises,
+    ...PROGRAM["Day 2"].exercises,
+  ];
+
+  const exercisesWithData = allExercises.filter(ex => getWeightProgression(ex.id).length >= 2);
+
+  return (
+    <div style={{ padding: "20px 20px 40px" }}>
+      <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 16 }}>
+        Progress
+      </div>
+      {exercisesWithData.length === 0 ? (
+        <div style={{ ...glassCard, padding: "24px 16px", textAlign: "center" }}>
+          <div style={{ fontSize: 13, color: T.textSoft }}>Log at least 2 sessions to see progress charts</div>
+        </div>
+      ) : (
+        exercisesWithData.map(ex => (
+          <ProgressChart key={ex.id} exerciseId={ex.id} name={ex.name} />
+        ))
+      )}
+    </div>
+  );
+}
+
+// ─── HISTORY SCREEN ───────────────────────────────────────────────────────────
+
+function HistoryScreen() {
+  const sessions = getSessions().slice().reverse();
+
+  return (
+    <div style={{ padding: "20px 20px 40px" }}>
+      <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 16 }}>
+        History
+      </div>
+      {sessions.length === 0 ? (
+        <div style={{ ...glassCard, padding: "24px 16px", textAlign: "center" }}>
+          <div style={{ fontSize: 13, color: T.textSoft }}>No sessions logged yet</div>
+        </div>
+      ) : (
+        sessions.map((s, i) => (
+          <div key={i} style={{ ...glassCard, padding: "14px 16px", marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <div>
+                <span style={{ fontSize: 15, fontWeight: 600, color: T.text }}>{s.day}</span>
+                <span style={{ fontSize: 12, color: T.textMuted, marginLeft: 8 }}>{s.date}</span>
+              </div>
+              {s.duration != null && (
+                <span style={{ fontSize: 12, color: T.green, fontWeight: 600 }}>{s.duration} min</span>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 12, fontSize: 11, color: T.textSoft }}>
+              {s.bw && <span>BW: {s.bw}kg</span>}
+              {s.energy && <span>Energy: {s.energy}</span>}
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }
@@ -847,6 +997,14 @@ export default function App() {
   const [activeSession, setActiveSession] = useState(null);
   const [lastSession, setLastSession] = useState(null);
 
+  // Load sessions from localStorage + register service worker
+  useEffect(() => {
+    setSessionLog(getSessions());
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
+
   const handleStart = (dayKey, bw, energy) => {
     setActiveSession({ dayKey, bw, energy });
     setScreen("workout");
@@ -855,9 +1013,17 @@ export default function App() {
   const handleFinish = (sessionData) => {
     setLastSession(sessionData);
     setSessionLog(l => [...l, sessionData]);
+    saveSession(sessionData);
     setActiveSession(null);
     setScreen("summary");
   };
+
+  const isActiveWorkout = screen === "workout" || screen === "summary";
+  const navItems = [
+    { id: "home", label: "Home", icon: "●" },
+    { id: "progress", label: "Progress", icon: "↗" },
+    { id: "history", label: "History", icon: "☰" },
+  ];
 
   return (
     <div style={{
@@ -866,7 +1032,7 @@ export default function App() {
       color: T.text,
       fontFamily: "-apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif",
       maxWidth: 480, margin: "0 auto",
-      paddingBottom: "env(safe-area-inset-bottom, 0px)",
+      paddingBottom: isActiveWorkout ? "env(safe-area-inset-bottom, 0px)" : "calc(env(safe-area-inset-bottom, 0px) + 64px)",
     }}>
       <style>{`
         * { box-sizing: border-box; }
@@ -893,7 +1059,7 @@ export default function App() {
             PHYSIQUE
           </span>
         </div>
-        {screen !== "home" && (
+        {isActiveWorkout && (
           <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: T.textSoft, cursor: "pointer", fontSize: 12, letterSpacing: 1, fontWeight: 500 }}>
             ← HOME
           </button>
@@ -903,6 +1069,8 @@ export default function App() {
       {screen === "home" && (
         <HomeScreen sessionLog={sessionLog} onStart={handleStart} />
       )}
+      {screen === "progress" && <ProgressScreen />}
+      {screen === "history" && <HistoryScreen />}
       {screen === "workout" && activeSession && (
         <WorkoutScreen
           dayKey={activeSession.dayKey}
@@ -913,6 +1081,35 @@ export default function App() {
       )}
       {screen === "summary" && lastSession && (
         <SummaryScreen session={lastSession} onHome={() => setScreen("home")} />
+      )}
+
+      {/* Bottom tab bar */}
+      {!isActiveWorkout && (
+        <div style={{
+          position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+          width: "100%", maxWidth: 480, zIndex: 100,
+          background: "rgba(243,241,236,0.75)",
+          backdropFilter: "blur(20px) saturate(1.4)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.4)",
+          borderTop: `1px solid ${T.divider}`,
+          display: "flex", justifyContent: "space-around", alignItems: "center",
+          padding: "10px 0", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
+        }}>
+          {navItems.map(item => (
+            <button key={item.id} onClick={() => setScreen(item.id)}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                color: screen === item.id ? T.green : T.textMuted,
+                fontWeight: screen === item.id ? 600 : 400,
+                transition: "color 0.15s",
+                padding: "4px 20px",
+              }}>
+              <span style={{ fontSize: 16 }}>{item.icon}</span>
+              <span style={{ fontSize: 9, letterSpacing: 1, textTransform: "uppercase" }}>{item.label}</span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

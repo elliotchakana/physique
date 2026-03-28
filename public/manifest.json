@@ -1,0 +1,15 @@
+{
+  "name": "Physique",
+  "short_name": "Physique",
+  "start_url": "/workout",
+  "display": "standalone",
+  "background_color": "#f3f1ec",
+  "theme_color": "#f3f1ec",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

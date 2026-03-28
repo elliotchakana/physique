@@ -31,6 +31,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Physique" />
         <meta name="theme-color" content="#f3f1ec" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body style={{ margin: 0, padding: 0, background: "#f3f1ec" }}>
         {children}
