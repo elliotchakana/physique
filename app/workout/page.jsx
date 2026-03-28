@@ -268,6 +268,46 @@ function saveSession(sessionData) {
   } catch {}
 }
 
+function exportAllData() {
+  try {
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith("physique_")) {
+        data[key] = JSON.parse(localStorage.getItem(key));
+      }
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `physique-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    return true;
+  } catch { return false; }
+}
+
+function importData(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        let count = 0;
+        for (const [key, value] of Object.entries(data)) {
+          if (key.startsWith("physique_")) {
+            localStorage.setItem(key, JSON.stringify(value));
+            count++;
+          }
+        }
+        resolve(count);
+      } catch { resolve(0); }
+    };
+    reader.readAsText(file);
+  });
+}
+
 // ─── REST TIMER ───────────────────────────────────────────────────────────────
 
 function RestTimer({ seconds, onDone }) {
@@ -984,6 +1024,100 @@ function SummaryScreen({ session, onHome }) {
   );
 }
 
+// ─── DATA SCREEN ──────────────────────────────────────────────────────────────
+
+function DataScreen() {
+  const [status, setStatus] = useState(null);
+  const fileRef = useRef(null);
+
+  const sessions = getSessions();
+  const allExercises = [...PROGRAM["Day 1"].exercises, ...PROGRAM["Day 2"].exercises];
+  const totalSets = allExercises.reduce((sum, ex) => sum + getHistory(ex.id).length, 0);
+
+  const handleExport = () => {
+    const ok = exportAllData();
+    setStatus(ok ? "Backup downloaded" : "Export failed");
+    setTimeout(() => setStatus(null), 3000);
+  };
+
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const count = await importData(file);
+    setStatus(count > 0 ? `Restored ${count} data entries` : "Import failed — invalid file");
+    e.target.value = "";
+    setTimeout(() => setStatus(null), 3000);
+  };
+
+  return (
+    <div style={{ padding: "20px 20px 40px" }}>
+      <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 4, textTransform: "uppercase", marginBottom: 16 }}>
+        Data
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+        {[
+          { label: "Sessions", val: sessions.length },
+          { label: "Sets Logged", val: totalSets },
+        ].map((s, i) => (
+          <div key={i} style={{ ...glassCard, flex: 1, padding: "14px 16px" }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: T.green, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{s.val}</div>
+            <div style={{ fontSize: 10, color: T.textMuted, marginTop: 4, letterSpacing: 1, textTransform: "uppercase" }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Export */}
+      <div style={{ ...glassCard, padding: "16px", marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 4 }}>Export Backup</div>
+        <div style={{ fontSize: 11, color: T.textSoft, marginBottom: 12 }}>
+          Download all your workout data as a JSON file
+        </div>
+        <button onClick={handleExport}
+          style={{
+            width: "100%", padding: "12px 0", borderRadius: T.radiusSm,
+            background: T.green, border: "none", color: "#fff",
+            fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase",
+            cursor: "pointer",
+          }}>
+          Download Backup
+        </button>
+      </div>
+
+      {/* Import */}
+      <div style={{ ...glassCard, padding: "16px", marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 4 }}>Restore Backup</div>
+        <div style={{ fontSize: 11, color: T.textSoft, marginBottom: 12 }}>
+          Import a previously exported JSON backup file
+        </div>
+        <input ref={fileRef} type="file" accept=".json" onChange={handleImport}
+          style={{ display: "none" }} />
+        <button onClick={() => fileRef.current?.click()}
+          style={{
+            width: "100%", padding: "12px 0", borderRadius: T.radiusSm,
+            background: "rgba(255,255,255,0.5)", border: `1px solid ${T.greenBorder}`,
+            color: T.green,
+            fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase",
+            cursor: "pointer",
+          }}>
+          Import Backup
+        </button>
+      </div>
+
+      {/* Status */}
+      {status && (
+        <div style={{
+          ...glassCard, padding: "12px 16px", textAlign: "center",
+          fontSize: 12, color: T.green, fontWeight: 500,
+        }}>
+          {status}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── APP ROOT ─────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -1018,6 +1152,7 @@ export default function App() {
     { id: "home", label: "Home", icon: "●" },
     { id: "progress", label: "Progress", icon: "↗" },
     { id: "history", label: "History", icon: "☰" },
+    { id: "data", label: "Data", icon: "↓" },
   ];
 
   return (
@@ -1066,6 +1201,7 @@ export default function App() {
       )}
       {screen === "progress" && <ProgressScreen />}
       {screen === "history" && <HistoryScreen />}
+      {screen === "data" && <DataScreen />}
       {screen === "workout" && activeSession && (
         <WorkoutScreen
           dayKey={activeSession.dayKey}
