@@ -211,6 +211,34 @@ function formatDuration(secs) {
   return m > 0 ? `${m}:${s.toString().padStart(2, "0")}` : `${s}s`;
 }
 
+// ─── PERSISTENCE ─────────────────────────────────────────────────────────────
+
+function getHistory(exerciseId) {
+  try {
+    const raw = localStorage.getItem(`physique_${exerciseId}`);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveSetLog(exerciseId, setData) {
+  try {
+    const history = getHistory(exerciseId);
+    history.push({ ...setData, date: new Date().toISOString() });
+    // keep last 50 entries per exercise
+    const trimmed = history.slice(-50);
+    localStorage.setItem(`physique_${exerciseId}`, JSON.stringify(trimmed));
+  } catch {}
+}
+
+function getLastWeight(exerciseId) {
+  const history = getHistory(exerciseId);
+  // find most recent entry that has weight
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].weight) return history[i];
+  }
+  return null;
+}
+
 // ─── REST TIMER ───────────────────────────────────────────────────────────────
 
 function RestTimer({ seconds, onDone }) {
@@ -250,8 +278,8 @@ function RestTimer({ seconds, onDone }) {
 
 // ─── SET LOG ROW ──────────────────────────────────────────────────────────────
 
-function SetRow({ setNum, track, onLog }) {
-  const [vals, setVals] = useState({});
+function SetRow({ setNum, track, onLog, defaults }) {
+  const [vals, setVals] = useState(defaults || {});
   const [done, setDone] = useState(false);
   const RIR_OPTIONS = [0, 1, 2, 3];
   const handleLog = () => { setDone(true); onLog({ set: setNum, ...vals }); };
@@ -271,16 +299,19 @@ function SetRow({ setNum, track, onLog }) {
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {track.includes("weight") && (
           <input type="number" placeholder="kg" min={0}
+            value={vals.weight || ""}
             onChange={e => setVals(v => ({ ...v, weight: e.target.value }))}
             style={inputStyle} />
         )}
         {track.includes("reps") && (
           <input type="number" placeholder="reps" min={0}
+            value={vals.reps || ""}
             onChange={e => setVals(v => ({ ...v, reps: e.target.value }))}
             style={inputStyle} />
         )}
         {track.includes("duration") && (
           <input type="number" placeholder="sec" min={0}
+            value={vals.duration || ""}
             onChange={e => setVals(v => ({ ...v, duration: e.target.value }))}
             style={inputStyle} />
         )}
@@ -373,6 +404,7 @@ function ExerciseCard({ ex: exProp, idx }) {
   const [expanded, setExpanded] = useState(idx === 0);
   const [timerKey, setTimerKey] = useState(null);
   const [logs, setLogs] = useState([]);
+  const [lastUsed] = useState(() => getLastWeight(exProp.id));
 
   const completedSets = logs.length;
   const allDone = completedSets >= ex.sets;
@@ -408,6 +440,11 @@ function ExerciseCard({ ex: exProp, idx }) {
             </span>
           </div>
           <div style={{ fontSize: 11, color: T.textSoft, marginTop: 2 }}>{ex.purpose}</div>
+          {lastUsed && lastUsed.weight && (
+            <div style={{ fontSize: 10, color: T.textMuted, marginTop: 3 }}>
+              Last: {lastUsed.weight}kg{lastUsed.reps ? ` × ${lastUsed.reps}` : ""}
+            </div>
+          )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 11, color: T.green, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
@@ -478,8 +515,10 @@ function ExerciseCard({ ex: exProp, idx }) {
           <div style={{ marginBottom: 14 }}>
             {Array.from({ length: ex.sets }, (_, i) => (
               <SetRow key={i} setNum={i + 1} track={ex.track}
+                defaults={lastUsed ? { weight: lastUsed.weight, reps: lastUsed.reps } : undefined}
                 onLog={(data) => {
                   setLogs(l => [...l, data]);
+                  saveSetLog(ex.id, data);
                   if (i + 1 < ex.sets) setTimerKey(Date.now());
                 }} />
             ))}
