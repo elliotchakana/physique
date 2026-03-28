@@ -345,17 +345,19 @@ function ExerciseGif({ searchQuery }) {
     setLoading(true);
     setError(false);
     const encoded = encodeURIComponent(searchQuery);
-    // Giphy public beta key — read-only, rate-limited but works for personal use
-    fetch(`https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encoded}&limit=3&rating=g`)
+    fetch(`https://tenor.googleapis.com/v2/search?q=${encoded}&key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&client_key=physique_app&limit=3`)
       .then(r => r.json())
       .then(data => {
-        const gifs = data?.data;
-        if (gifs && gifs.length > 0) {
-          // pick second result if available — tends to be cleaner form demos
-          const pick = gifs[Math.min(1, gifs.length - 1)];
-          const url = pick.images?.fixed_height?.url || pick.images?.original?.url;
-          GIF_CACHE[searchQuery] = url;
-          setGifUrl(url);
+        const results = data?.results;
+        if (results && results.length > 0) {
+          const pick = results[Math.min(1, results.length - 1)];
+          const url = pick.media_formats?.tinygif?.url || pick.media_formats?.gif?.url;
+          if (url) {
+            GIF_CACHE[searchQuery] = url;
+            setGifUrl(url);
+          } else {
+            setError(true);
+          }
         } else {
           setError(true);
         }
@@ -815,12 +817,14 @@ export default function App() {
       minHeight: "100vh",
       background: "#101c14",
       color: "#f2f4f1",
-      fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
       maxWidth: 480, margin: "0 auto",
+      paddingBottom: "env(safe-area-inset-bottom, 0px)",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
         * { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
         input:focus { border-color: #333 !important; }
         input[type=number]::-webkit-inner-spin-button { opacity: 0; }
         ::-webkit-scrollbar { width: 0; height: 0; }
@@ -830,8 +834,10 @@ export default function App() {
       <div style={{
         position: "sticky", top: 0, zIndex: 100,
         background: "#101c14cc", backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
         borderBottom: "1px solid #1a2e1e",
-        padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "14px 20px", paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#5a9e72" }} />
