@@ -1,6 +1,36 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 
+// ─── THEME ───────────────────────────────────────────────────────────────────
+
+const T = {
+  bg: "#f3f1ec",
+  card: "rgba(255,255,255,0.55)",
+  cardBorder: "rgba(90,158,114,0.15)",
+  cardSolid: "rgba(255,255,255,0.7)",
+  glass: "blur(20px) saturate(1.4)",
+  green: "#4a8c5c",
+  greenLight: "#5a9e72",
+  greenFaint: "rgba(90,158,114,0.10)",
+  greenBorder: "rgba(90,158,114,0.25)",
+  text: "#1a1a1a",
+  textSoft: "#555",
+  textMuted: "#999",
+  divider: "rgba(90,158,114,0.12)",
+  inputBg: "rgba(255,255,255,0.6)",
+  inputBorder: "rgba(0,0,0,0.08)",
+  radius: 16,
+  radiusSm: 10,
+};
+
+const glassCard = {
+  background: T.card,
+  backdropFilter: T.glass,
+  WebkitBackdropFilter: T.glass,
+  border: `1px solid ${T.cardBorder}`,
+  borderRadius: T.radius,
+};
+
 // ─── DATA ───────────────────────────────────────────────────────────────────
 
 const PROGRAM = {
@@ -18,7 +48,6 @@ const PROGRAM = {
         priority: "upper_chest",
         track: ["weight","reps","RIR"],
         cues: ["Shoulders down and back", "No shrugging"],
-
         variants: null,
       },
       {
@@ -32,7 +61,6 @@ const PROGRAM = {
         track: ["weight","reps"],
         cues: ["Raise out, not up", "Stop at shoulder height", "Neck relaxed"],
         finisherNote: "Last set: 5–8 top-half partials after full reps",
-
         variants: [
           { id: "cable", label: "Cable" },
           { id: "dumbbell", label: "Dumbbell" },
@@ -48,7 +76,6 @@ const PROGRAM = {
         priority: "back",
         track: ["weight","reps"],
         cues: ["Depress scapula before pulling", "Avoid neck tension"],
-
         variants: [
           { id: "bodyweight", label: "Bodyweight" },
           { id: "weighted", label: "+Weight" },
@@ -66,7 +93,6 @@ const PROGRAM = {
         track: ["reps"],
         cues: ["Shoulder blades into back pockets", "Thumbs up"],
         note: "Technique exercise. Light load only.",
-
         variants: null,
       },
       {
@@ -79,7 +105,6 @@ const PROGRAM = {
         priority: "core",
         track: ["reps"],
         cues: ["Curl pelvis upward", "No swinging", "Tailbone toward ribs"],
-
         variants: [
           { id: "legs", label: "Legs" },
           { id: "knees", label: "Knees (reg.)" },
@@ -112,7 +137,6 @@ const PROGRAM = {
         priority: "posterior",
         track: ["weight","reps","RIR"],
         cues: ["Hips back", "Ribs down", "Neutral spine"],
-
         variants: null,
       },
       {
@@ -125,7 +149,6 @@ const PROGRAM = {
         track: ["weight","reps"],
         cues: ["Slight torso lean", "Push through front heel"],
         note: "Dumbbell-based.",
-
         variants: null,
       },
       {
@@ -137,7 +160,6 @@ const PROGRAM = {
         priority: "rear_delt",
         track: ["weight","reps"],
         cues: ["Pull to forehead", "Slight pull-apart at end", "No shrugging"],
-
         variants: null,
       },
       {
@@ -150,7 +172,6 @@ const PROGRAM = {
         track: ["weight","reps"],
         cues: ["Open wide", "Do not row", "Chest supported if possible"],
         note: "Preferred: chest-supported.",
-
         variants: null,
       },
       {
@@ -163,7 +184,6 @@ const PROGRAM = {
         track: ["duration"],
         cues: ["Squeeze glutes", "Ribs down", "Pull elbows toward toes"],
         note: "If you can hold >45 sec easily, tension is too low.",
-
         variants: null,
       },
     ],
@@ -177,17 +197,6 @@ const MOBILITY = [
   { name: "Lat Stretch on Bench", sets: "1–2", duration: "40 sec" },
   { name: "Couch Stretch", sets: "1–2", duration: "30–45 sec / side" },
 ];
-
-const PRIORITY_COLOR = {
-  upper_chest: "#5a9e72",
-  lateral_delt: "#5a9e72",
-  rear_delt: "#5a9e72",
-  lower_trap: "#7ab896",
-  core: "#7ab896",
-  posterior: "#a8ccb8",
-  back: "#a8ccb8",
-  legs: "#a8ccb8",
-};
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -208,9 +217,7 @@ function RestTimer({ seconds, onDone }) {
   const [remaining, setRemaining] = useState(seconds);
   const ref = useRef(null);
 
-  useEffect(() => {
-    setRemaining(seconds);
-  }, [seconds]);
+  useEffect(() => { setRemaining(seconds); }, [seconds]);
 
   useEffect(() => {
     ref.current = setInterval(() => {
@@ -228,15 +235,15 @@ function RestTimer({ seconds, onDone }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
       <svg width={60} height={60} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={30} cy={30} r={r} fill="none" stroke="#1c2e20" strokeWidth={4} />
-        <circle cx={30} cy={30} r={r} fill="none" stroke="#5a9e72" strokeWidth={4}
+        <circle cx={30} cy={30} r={r} fill="none" stroke={T.greenFaint} strokeWidth={4} />
+        <circle cx={30} cy={30} r={r} fill="none" stroke={T.green} strokeWidth={4}
           strokeDasharray={circ} strokeDashoffset={circ * (1 - pct / 100)}
           style={{ transition: "stroke-dashoffset 1s linear" }} />
       </svg>
-      <span style={{ marginTop: -46, position: "absolute", fontFamily: "monospace", fontSize: 13, color: "#5a9e72", fontWeight: 700 }}>
+      <span style={{ marginTop: -46, position: "absolute", fontSize: 13, color: T.green, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
         {formatDuration(remaining)}
       </span>
-      <span style={{ marginTop: 6, fontSize: 11, color: "#7a9e80", letterSpacing: 2, textTransform: "uppercase" }}>Rest</span>
+      <span style={{ marginTop: 6, fontSize: 11, color: T.textMuted, letterSpacing: 2, textTransform: "uppercase" }}>Rest</span>
     </div>
   );
 }
@@ -246,24 +253,19 @@ function RestTimer({ seconds, onDone }) {
 function SetRow({ setNum, track, onLog }) {
   const [vals, setVals] = useState({});
   const [done, setDone] = useState(false);
-
   const RIR_OPTIONS = [0, 1, 2, 3];
-
-  const handleLog = () => {
-    setDone(true);
-    onLog({ set: setNum, ...vals });
-  };
+  const handleLog = () => { setDone(true); onLog({ set: setNum, ...vals }); };
 
   return (
     <div style={{
       display: "grid", gridTemplateColumns: "28px 1fr auto",
       alignItems: "center", gap: 8,
       padding: "8px 0",
-      borderBottom: "1px solid #1a2e1e",
-      opacity: done ? 0.45 : 1,
+      borderBottom: `1px solid ${T.divider}`,
+      opacity: done ? 0.4 : 1,
       transition: "opacity 0.3s",
     }}>
-      <span style={{ fontFamily: "monospace", fontSize: 12, color: "#4a6e52" }}>
+      <span style={{ fontSize: 12, color: T.textMuted, fontVariantNumeric: "tabular-nums" }}>
         {setNum.toString().padStart(2, "0")}
       </span>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -288,8 +290,8 @@ function SetRow({ setNum, track, onLog }) {
               <button key={r} onClick={() => setVals(v => ({ ...v, rir: r }))}
                 style={{
                   ...pillStyle,
-                  background: vals.rir === r ? "#5a9e72" : "#1a2e1e",
-                  color: vals.rir === r ? "#000" : "#7a9e80",
+                  background: vals.rir === r ? T.green : "rgba(255,255,255,0.5)",
+                  color: vals.rir === r ? "#fff" : T.textSoft,
                 }}>
                 {r}
               </button>
@@ -300,9 +302,9 @@ function SetRow({ setNum, track, onLog }) {
       <button onClick={handleLog} disabled={done}
         style={{
           width: 28, height: 28, borderRadius: "50%",
-          border: done ? "none" : "1px solid #2a3d2e",
-          background: done ? "#5a9e72" : "transparent",
-          color: done ? "#000" : "#4a6e52",
+          border: done ? "none" : `1px solid ${T.greenBorder}`,
+          background: done ? T.green : "rgba(255,255,255,0.4)",
+          color: done ? "#fff" : T.textMuted,
           cursor: done ? "default" : "pointer",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 14, transition: "all 0.2s",
@@ -314,16 +316,19 @@ function SetRow({ setNum, track, onLog }) {
 }
 
 const inputStyle = {
-  width: 60, padding: "4px 6px",
-  background: "#0e1810", border: "1px solid #1c2e20",
-  color: "#eef2ee", fontFamily: "monospace", fontSize: 13,
-  borderRadius: 4, outline: "none",
+  width: 60, padding: "6px 8px",
+  background: T.inputBg, border: `1px solid ${T.inputBorder}`,
+  color: T.text, fontSize: 13,
+  borderRadius: 8, outline: "none",
+  backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
 };
 
 const pillStyle = {
-  padding: "3px 8px", borderRadius: 4, border: "1px solid #1c2e20",
-  fontFamily: "monospace", fontSize: 11, cursor: "pointer",
+  padding: "4px 10px", borderRadius: 20, border: `1px solid ${T.greenBorder}`,
+  fontSize: 11, cursor: "pointer",
   transition: "all 0.15s",
+  background: "rgba(255,255,255,0.4)",
+  color: T.textSoft,
 };
 
 // ─── EXERCISE IMAGES ──────────────────────────────────────────────────────────
@@ -345,16 +350,13 @@ const EXERCISE_IMAGES = {
 function ExerciseImage({ exerciseId }) {
   const images = EXERCISE_IMAGES[exerciseId];
   if (!images) return null;
-
   return (
-    <div style={{
-      display: "flex", gap: 8, marginBottom: 14,
-    }}>
+    <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
       {images.map((src, i) => (
         <div key={i} style={{
-          flex: 1, borderRadius: 6, overflow: "hidden",
-          background: "#0e1810", border: "1px solid #1a2e1e",
-          aspectRatio: "3/4", display: "flex", alignItems: "center", justifyContent: "center",
+          flex: 1, borderRadius: T.radiusSm, overflow: "hidden",
+          background: "rgba(255,255,255,0.3)", border: `1px solid ${T.cardBorder}`,
+          aspectRatio: "3/4",
         }}>
           <img src={src} alt={`${exerciseId} position ${i + 1}`}
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -372,7 +374,6 @@ function ExerciseCard({ ex: exProp, idx }) {
   const [timerKey, setTimerKey] = useState(null);
   const [logs, setLogs] = useState([]);
 
-  const accentColor = PRIORITY_COLOR[ex.priority] || "#5a9e72";
   const completedSets = logs.length;
   const allDone = completedSets >= ex.sets;
 
@@ -384,34 +385,35 @@ function ExerciseCard({ ex: exProp, idx }) {
 
   return (
     <div style={{
-      background: "#131f16", border: `1px solid ${allDone ? accentColor + "55" : "#1c2e20"}`,
-      borderRadius: 8, marginBottom: 12, overflow: "hidden",
+      ...glassCard,
+      marginBottom: 12, overflow: "hidden",
+      borderColor: allDone ? T.greenBorder : T.cardBorder,
       transition: "border-color 0.3s",
     }}>
       {/* Header */}
       <div onClick={() => setExpanded(e => !e)}
         style={{ padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{
-          width: 6, height: 6, borderRadius: "50%",
-          background: allDone ? accentColor : "#2a3d2e",
+          width: 8, height: 8, borderRadius: "50%",
+          background: allDone ? T.green : T.divider,
           transition: "background 0.3s", flexShrink: 0,
         }} />
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#f2f4f1", letterSpacing: "-0.3px" }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: T.text }}>
               {ex.name}
             </span>
-            <span style={{ fontFamily: "monospace", fontSize: 11, color: "#4a6e52" }}>
+            <span style={{ fontSize: 11, color: T.textMuted, fontVariantNumeric: "tabular-nums" }}>
               {ex.sets}×{ex.repRange}
             </span>
           </div>
-          <div style={{ fontSize: 11, color: "#4a6e52", marginTop: 2 }}>{ex.purpose}</div>
+          <div style={{ fontSize: 11, color: T.textSoft, marginTop: 2 }}>{ex.purpose}</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontFamily: "monospace", fontSize: 11, color: accentColor }}>
+          <span style={{ fontSize: 11, color: T.green, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
             {completedSets}/{ex.sets}
           </span>
-          <span style={{ color: "#2a3d2e", fontSize: 12, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
+          <span style={{ color: T.textMuted, fontSize: 12, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
         </div>
       </div>
 
@@ -426,9 +428,10 @@ function ExerciseCard({ ex: exProp, idx }) {
                 <button key={v.id} onClick={() => toggleVariant(v.id)}
                   style={{
                     ...pillStyle,
-                    background: ex.activeVariant === v.id ? accentColor + "22" : "transparent",
-                    color: ex.activeVariant === v.id ? accentColor : "#4a6e52",
-                    borderColor: ex.activeVariant === v.id ? accentColor + "55" : "#1c2e20",
+                    background: ex.activeVariant === v.id ? T.greenFaint : "rgba(255,255,255,0.4)",
+                    color: ex.activeVariant === v.id ? T.green : T.textSoft,
+                    borderColor: ex.activeVariant === v.id ? T.greenBorder : T.inputBorder,
+                    fontWeight: ex.activeVariant === v.id ? 600 : 400,
                   }}>
                   {v.label}
                 </button>
@@ -443,9 +446,9 @@ function ExerciseCard({ ex: exProp, idx }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
             {ex.cues.map((c, i) => (
               <span key={i} style={{
-                fontSize: 10, padding: "2px 8px", borderRadius: 3,
-                background: "#1a2e1e", color: "#8aaa8e",
-                letterSpacing: 1, textTransform: "uppercase",
+                fontSize: 10, padding: "3px 10px", borderRadius: 20,
+                background: T.greenFaint, color: T.green,
+                letterSpacing: 0.5,
               }}>{c}</span>
             ))}
           </div>
@@ -454,19 +457,19 @@ function ExerciseCard({ ex: exProp, idx }) {
           <div style={{ display: "flex", gap: 16, marginBottom: 14 }}>
             {ex.tempo && (
               <div>
-                <div style={{ fontSize: 9, color: "#2a3d2e", letterSpacing: 2, textTransform: "uppercase", marginBottom: 2 }}>Tempo</div>
-                <div style={{ fontSize: 11, color: "#8aaa8e", fontFamily: "monospace" }}>{ex.tempo}</div>
+                <div style={{ fontSize: 9, color: T.textMuted, letterSpacing: 2, textTransform: "uppercase", marginBottom: 2 }}>Tempo</div>
+                <div style={{ fontSize: 11, color: T.textSoft }}>{ex.tempo}</div>
               </div>
             )}
             <div>
-              <div style={{ fontSize: 9, color: "#2a3d2e", letterSpacing: 2, textTransform: "uppercase", marginBottom: 2 }}>Rest</div>
-              <div style={{ fontSize: 11, color: "#8aaa8e", fontFamily: "monospace" }}>{formatDuration(ex.restSeconds)}</div>
+              <div style={{ fontSize: 9, color: T.textMuted, letterSpacing: 2, textTransform: "uppercase", marginBottom: 2 }}>Rest</div>
+              <div style={{ fontSize: 11, color: T.textSoft }}>{formatDuration(ex.restSeconds)}</div>
             </div>
           </div>
 
           {/* Notes */}
           {(ex.note || ex.finisherNote) && (
-            <div style={{ fontSize: 11, color: "#7a9e80", fontStyle: "italic", marginBottom: 14, paddingLeft: 8, borderLeft: "2px solid #1c2e20" }}>
+            <div style={{ fontSize: 11, color: T.textSoft, fontStyle: "italic", marginBottom: 14, paddingLeft: 10, borderLeft: `2px solid ${T.greenBorder}` }}>
               {ex.note || ex.finisherNote}
             </div>
           )}
@@ -490,7 +493,7 @@ function ExerciseCard({ ex: exProp, idx }) {
           )}
 
           {allDone && (
-            <div style={{ textAlign: "center", padding: "6px 0", fontSize: 11, color: accentColor, letterSpacing: 2, textTransform: "uppercase" }}>
+            <div style={{ textAlign: "center", padding: "6px 0", fontSize: 11, color: T.green, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase" }}>
               ✓ Complete
             </div>
           )}
@@ -505,31 +508,31 @@ function ExerciseCard({ ex: exProp, idx }) {
 function FinisherCard({ finisher }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ border: "1px dashed #1c2e20", borderRadius: 8, marginBottom: 12 }}>
+    <div style={{ ...glassCard, marginBottom: 12, border: `1px dashed ${T.greenBorder}` }}>
       <div onClick={() => setOpen(o => !o)}
         style={{ padding: "12px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <span style={{ fontSize: 12, color: "#5a9e72", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+          <span style={{ fontSize: 12, color: T.green, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>
             + {finisher.label}
           </span>
-          <div style={{ fontSize: 10, color: "#2a3d2e", marginTop: 2 }}>Optional · After Day 1</div>
+          <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>Optional · After Day 1</div>
         </div>
-        <span style={{ color: "#2a3d2e", fontSize: 12 }}>{open ? "▴" : "▾"}</span>
+        <span style={{ color: T.textMuted, fontSize: 12 }}>{open ? "▴" : "▾"}</span>
       </div>
       {open && (
         <div style={{ padding: "0 16px 16px" }}>
           {finisher.blocks.map((b, i) => (
-            <div key={i} style={{ display: "flex", gap: 12, padding: "8px 0", borderBottom: "1px solid #131f16" }}>
-              <span style={{ fontFamily: "monospace", fontSize: 10, color: "#5a9e72", minWidth: 56 }}>{b.time}</span>
+            <div key={i} style={{ display: "flex", gap: 12, padding: "8px 0", borderBottom: `1px solid ${T.divider}` }}>
+              <span style={{ fontSize: 10, color: T.green, minWidth: 56, fontVariantNumeric: "tabular-nums" }}>{b.time}</span>
               <div>
-                <div style={{ fontSize: 12, color: "#d0ddd2" }}>{b.move}</div>
-                <div style={{ fontSize: 10, color: "#4a6e52", marginTop: 2 }}>{b.detail}</div>
+                <div style={{ fontSize: 12, color: T.text }}>{b.move}</div>
+                <div style={{ fontSize: 10, color: T.textMuted, marginTop: 2 }}>{b.detail}</div>
               </div>
             </div>
           ))}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
             {finisher.cues.map((c, i) => (
-              <span key={i} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 3, background: "#1a2e1e", color: "#5a9e7244", border: "1px solid #5a9e7222", letterSpacing: 1, textTransform: "uppercase" }}>{c}</span>
+              <span key={i} style={{ fontSize: 10, padding: "3px 10px", borderRadius: 20, background: T.greenFaint, color: T.green }}>{c}</span>
             ))}
           </div>
         </div>
@@ -543,18 +546,18 @@ function FinisherCard({ finisher }) {
 function MobilitySection() {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ border: "1px solid #172b1b", borderRadius: 8, marginTop: 20 }}>
+    <div style={{ ...glassCard, marginTop: 20 }}>
       <div onClick={() => setOpen(o => !o)}
         style={{ padding: "12px 16px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 12, color: "#7a9e80", letterSpacing: 2, textTransform: "uppercase" }}>Stretch / Mobility</span>
-        <span style={{ color: "#2a3d2e", fontSize: 12 }}>{open ? "▴" : "▾"}</span>
+        <span style={{ fontSize: 12, color: T.textSoft, letterSpacing: 2, textTransform: "uppercase" }}>Stretch / Mobility</span>
+        <span style={{ color: T.textMuted, fontSize: 12 }}>{open ? "▴" : "▾"}</span>
       </div>
       {open && (
         <div style={{ padding: "0 16px 16px" }}>
           {MOBILITY.map((m, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #131f16", fontSize: 12 }}>
-              <span style={{ color: "#c2d4c4" }}>{m.name}</span>
-              <span style={{ fontFamily: "monospace", color: "#4a6e52" }}>{m.sets}×{m.duration}</span>
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${T.divider}`, fontSize: 12 }}>
+              <span style={{ color: T.text }}>{m.name}</span>
+              <span style={{ color: T.textMuted, fontVariantNumeric: "tabular-nums" }}>{m.sets}×{m.duration}</span>
             </div>
           ))}
         </div>
@@ -577,72 +580,74 @@ function HomeScreen({ sessionLog, onStart }) {
   return (
     <div style={{ padding: "0 0 40px" }}>
       {/* Hero */}
-      <div style={{ padding: "32px 20px 24px", borderBottom: "1px solid #1a2e1e" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <div style={{ fontSize: 10, color: "#4a6e52", letterSpacing: 4, textTransform: "uppercase" }}>
+      <div style={{ padding: "32px 20px 24px", borderBottom: `1px solid ${T.divider}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 4, textTransform: "uppercase" }}>
             Today
           </div>
           <div style={{ display: "flex", gap: 6 }}>
             {["Day 1", "Day 2"].map(d => (
               <button key={d} onClick={() => setSelectedDay(d)}
                 style={{
-                  ...pillStyle, fontSize: 10,
-                  background: selectedDay === d ? "#5a9e7222" : "transparent",
-                  color: selectedDay === d ? "#5a9e72" : "#4a6e52",
-                  borderColor: selectedDay === d ? "#5a9e7255" : "#1c2e20",
+                  ...pillStyle,
+                  background: selectedDay === d ? T.green : "rgba(255,255,255,0.5)",
+                  color: selectedDay === d ? "#fff" : T.textSoft,
+                  borderColor: selectedDay === d ? T.green : T.inputBorder,
+                  fontWeight: selectedDay === d ? 600 : 400,
                 }}>{d}</button>
             ))}
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 6 }}>
-          <h1 style={{ fontSize: 36, fontWeight: 900, color: "#f3f5f2", margin: 0, letterSpacing: "-1px", lineHeight: 1 }}>
+          <h1 style={{ fontSize: 36, fontWeight: 700, color: T.text, margin: 0, letterSpacing: "-1px", lineHeight: 1 }}>
             {dayData.label}
           </h1>
-          <span style={{ fontSize: 14, color: "#7a9e80" }}>—</span>
-          <span style={{ fontSize: 13, color: "#7a9e80" }}>{dayData.subtitle}</span>
+          <span style={{ fontSize: 14, color: T.textMuted }}>—</span>
+          <span style={{ fontSize: 13, color: T.textSoft }}>{dayData.subtitle}</span>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
           {dayData.focus.map((f, i) => (
             <span key={i} style={{
-              fontSize: 10, padding: "3px 10px", borderRadius: 20,
-              border: "1px solid #1c2e20", color: "#7a9e80", letterSpacing: 1, textTransform: "uppercase",
+              fontSize: 10, padding: "4px 12px", borderRadius: 20,
+              background: T.greenFaint, color: T.green, fontWeight: 500,
             }}>{f}</span>
           ))}
         </div>
       </div>
 
       {/* Weekly snapshot */}
-      <div style={{ padding: "20px 20px 0", display: "flex", gap: 16 }}>
+      <div style={{ padding: "20px 20px 0", display: "flex", gap: 12 }}>
         {[
           { label: "Total Sessions", val: totalSessions },
           { label: "This Week", val: weekLog.length },
         ].map((s, i) => (
-          <div key={i} style={{ flex: 1, padding: "14px 16px", background: "#131f16", borderRadius: 8, border: "1px solid #172b1b" }}>
-            <div style={{ fontFamily: "monospace", fontSize: 28, fontWeight: 700, color: "#5a9e72", lineHeight: 1 }}>{s.val}</div>
-            <div style={{ fontSize: 10, color: "#4a6e52", marginTop: 4, letterSpacing: 1, textTransform: "uppercase" }}>{s.label}</div>
+          <div key={i} style={{ ...glassCard, flex: 1, padding: "14px 16px" }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: T.green, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{s.val}</div>
+            <div style={{ fontSize: 10, color: T.textMuted, marginTop: 4, letterSpacing: 1, textTransform: "uppercase" }}>{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Pre-session inputs */}
       <div style={{ padding: "20px 20px 0" }}>
-        <div style={{ fontSize: 10, color: "#2a3d2e", letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>
+        <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>
           Pre-Session
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 14 }}>
           <input type="number" placeholder="Bodyweight (kg)" value={bw} onChange={e => setBw(e.target.value)}
-            style={{ ...inputStyle, width: 140, padding: "8px 12px", fontSize: 14 }} />
-          <span style={{ fontSize: 11, color: "#2a3d2e" }}>kg</span>
+            style={{ ...inputStyle, width: 140, padding: "10px 14px", fontSize: 14 }} />
+          <span style={{ fontSize: 11, color: T.textMuted }}>kg</span>
         </div>
-        <div style={{ marginBottom: 6, fontSize: 10, color: "#2a3d2e", letterSpacing: 2, textTransform: "uppercase" }}>Energy</div>
+        <div style={{ marginBottom: 6, fontSize: 10, color: T.textMuted, letterSpacing: 2, textTransform: "uppercase" }}>Energy</div>
         <div style={{ display: "flex", gap: 6 }}>
           {["Low", "Mid", "High", "Locked in"].map((e, i) => (
             <button key={e} onClick={() => setEnergy(e)}
               style={{
-                ...pillStyle, fontSize: 10,
-                background: energy === e ? "#5a9e7222" : "transparent",
-                color: energy === e ? "#5a9e72" : "#4a6e52",
-                borderColor: energy === e ? "#5a9e7255" : "#1c2e20",
+                ...pillStyle,
+                background: energy === e ? T.greenFaint : "rgba(255,255,255,0.5)",
+                color: energy === e ? T.green : T.textSoft,
+                borderColor: energy === e ? T.greenBorder : T.inputBorder,
+                fontWeight: energy === e ? 600 : 400,
               }}>{e}</button>
           ))}
         </div>
@@ -652,10 +657,11 @@ function HomeScreen({ sessionLog, onStart }) {
       <div style={{ padding: "28px 20px 0" }}>
         <button onClick={() => onStart(selectedDay, bw, energy)}
           style={{
-            width: "100%", padding: "16px 0", borderRadius: 8,
-            background: "#5a9e72", border: "none", color: "#000",
-            fontSize: 14, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase",
+            width: "100%", padding: "16px 0", borderRadius: T.radius,
+            background: T.green, border: "none", color: "#fff",
+            fontSize: 14, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
             cursor: "pointer",
+            boxShadow: "0 4px 20px rgba(90,158,114,0.3)",
           }}>
           Start {dayData.label}
         </button>
@@ -664,14 +670,14 @@ function HomeScreen({ sessionLog, onStart }) {
       {/* History */}
       {sessionLog.length > 0 && (
         <div style={{ padding: "28px 20px 0" }}>
-          <div style={{ fontSize: 10, color: "#2a3d2e", letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>
+          <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 3, textTransform: "uppercase", marginBottom: 12 }}>
             Recent
           </div>
           {sessionLog.slice(-4).reverse().map((s, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #131f16", fontSize: 12 }}>
-              <span style={{ color: "#7a9e80" }}>{s.day}</span>
-              <span style={{ fontFamily: "monospace", color: "#2a3d2e" }}>{s.date}</span>
-              {s.bw && <span style={{ fontFamily: "monospace", color: "#4a6e52" }}>{s.bw}kg</span>}
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${T.divider}`, fontSize: 12 }}>
+              <span style={{ color: T.text, fontWeight: 500 }}>{s.day}</span>
+              <span style={{ color: T.textMuted }}>{s.date}</span>
+              {s.bw && <span style={{ color: T.textSoft }}>{s.bw}kg</span>}
             </div>
           ))}
         </div>
@@ -700,25 +706,35 @@ function WorkoutScreen({ dayKey, bw, energy, onFinish }) {
   return (
     <div style={{ paddingBottom: 60 }}>
       {/* Header */}
-      <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid #1a2e1e", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${T.divider}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ fontSize: 10, color: "#4a6e52", letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>Active</div>
-          <div style={{ fontSize: 20, fontWeight: 900, color: "#f3f5f2", letterSpacing: "-0.5px" }}>
-            {dayData.label} <span style={{ fontWeight: 400, color: "#7a9e80", fontSize: 14 }}>— {dayData.subtitle}</span>
+          <div style={{ fontSize: 10, color: T.textMuted, letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>Active</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: T.text }}>
+            {dayData.label} <span style={{ fontWeight: 400, color: T.textSoft, fontSize: 14 }}>— {dayData.subtitle}</span>
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontFamily: "monospace", fontSize: 20, color: "#5a9e72" }}>
+          <div style={{ fontSize: 20, color: T.green, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
             {formatDuration(elapsed)}
           </div>
-          {energy && <div style={{ fontSize: 10, color: "#2a3d2e", textTransform: "uppercase", letterSpacing: 1 }}>{energy}</div>}
+          {energy && <div style={{ fontSize: 10, color: T.textMuted, textTransform: "uppercase", letterSpacing: 1 }}>{energy}</div>}
         </div>
       </div>
 
       {/* Global cues banner */}
-      <div style={{ padding: "10px 20px", background: "#0a130d", display: "flex", gap: 10, overflowX: "auto", borderBottom: "1px solid #1a2e1e" }}>
+      <div style={{
+        padding: "10px 20px",
+        background: "rgba(255,255,255,0.35)",
+        backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+        display: "flex", gap: 8, overflowX: "auto",
+        borderBottom: `1px solid ${T.divider}`,
+      }}>
         {["Long neck", "Shoulders down", "Ribs down", "Controlled eccentrics"].map((c, i) => (
-          <span key={i} style={{ fontSize: 9, whiteSpace: "nowrap", padding: "2px 8px", borderRadius: 2, background: "#131f16", color: "#2a3d2e", letterSpacing: 2, textTransform: "uppercase" }}>{c}</span>
+          <span key={i} style={{
+            fontSize: 9, whiteSpace: "nowrap", padding: "3px 10px", borderRadius: 20,
+            background: T.greenFaint, color: T.green,
+            letterSpacing: 1, textTransform: "uppercase",
+          }}>{c}</span>
         ))}
       </div>
 
@@ -727,7 +743,6 @@ function WorkoutScreen({ dayKey, bw, energy, onFinish }) {
         {dayData.exercises.map((ex, i) => (
           <ExerciseCard key={ex.id} ex={ex} idx={i} />
         ))}
-
         {dayData.finisher && <FinisherCard finisher={dayData.finisher} />}
         <MobilitySection />
       </div>
@@ -736,9 +751,11 @@ function WorkoutScreen({ dayKey, bw, energy, onFinish }) {
       <div style={{ padding: "24px 20px 0" }}>
         <button onClick={handleFinish}
           style={{
-            width: "100%", padding: "14px 0", borderRadius: 8,
-            background: "transparent", border: "1px solid #2a3d2e", color: "#7a9e80",
-            fontSize: 12, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase",
+            width: "100%", padding: "14px 0", borderRadius: T.radius,
+            background: "rgba(255,255,255,0.5)", border: `1px solid ${T.greenBorder}`,
+            backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+            color: T.green,
+            fontSize: 12, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase",
             cursor: "pointer",
           }}>
           End Session
@@ -754,9 +771,9 @@ function SummaryScreen({ session, onHome }) {
   return (
     <div style={{ padding: "40px 20px" }}>
       <div style={{ marginBottom: 32 }}>
-        <div style={{ fontSize: 10, color: "#5a9e72", letterSpacing: 4, textTransform: "uppercase", marginBottom: 12 }}>Session Complete</div>
-        <div style={{ fontSize: 40, fontWeight: 900, color: "#f3f5f2", letterSpacing: "-1px", lineHeight: 1 }}>{session.day}</div>
-        <div style={{ fontSize: 13, color: "#4a6e52", marginTop: 6 }}>{session.date}</div>
+        <div style={{ fontSize: 10, color: T.green, letterSpacing: 4, textTransform: "uppercase", marginBottom: 12 }}>Session Complete</div>
+        <div style={{ fontSize: 40, fontWeight: 700, color: T.text, letterSpacing: "-1px", lineHeight: 1 }}>{session.day}</div>
+        <div style={{ fontSize: 13, color: T.textMuted, marginTop: 6 }}>{session.date}</div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 32 }}>
         {[
@@ -764,17 +781,18 @@ function SummaryScreen({ session, onHome }) {
           { label: "Bodyweight", val: session.bw ? `${session.bw} kg` : "—" },
           { label: "Energy", val: session.energy || "—" },
         ].map((s, i) => (
-          <div key={i} style={{ padding: "14px 16px", background: "#131f16", borderRadius: 8, border: "1px solid #172b1b" }}>
-            <div style={{ fontFamily: "monospace", fontSize: 22, color: "#5a9e72", fontWeight: 700 }}>{s.val}</div>
-            <div style={{ fontSize: 10, color: "#2a3d2e", marginTop: 4, letterSpacing: 1, textTransform: "uppercase" }}>{s.label}</div>
+          <div key={i} style={{ ...glassCard, padding: "14px 16px" }}>
+            <div style={{ fontSize: 22, color: T.green, fontWeight: 700 }}>{s.val}</div>
+            <div style={{ fontSize: 10, color: T.textMuted, marginTop: 4, letterSpacing: 1, textTransform: "uppercase" }}>{s.label}</div>
           </div>
         ))}
       </div>
       <button onClick={onHome}
         style={{
-          width: "100%", padding: "16px 0", borderRadius: 8,
-          background: "#5a9e72", border: "none", color: "#000",
-          fontSize: 13, fontWeight: 900, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer",
+          width: "100%", padding: "16px 0", borderRadius: T.radius,
+          background: T.green, border: "none", color: "#fff",
+          fontSize: 13, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer",
+          boxShadow: "0 4px 20px rgba(90,158,114,0.3)",
         }}>
         Back to Home
       </button>
@@ -785,7 +803,7 @@ function SummaryScreen({ session, onHome }) {
 // ─── APP ROOT ─────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [screen, setScreen] = useState("home"); // home | workout | summary
+  const [screen, setScreen] = useState("home");
   const [sessionLog, setSessionLog] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [lastSession, setLastSession] = useState(null);
@@ -805,17 +823,17 @@ export default function App() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "#101c14",
-      color: "#f2f4f1",
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
+      background: T.bg,
+      color: T.text,
+      fontFamily: "-apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif",
       maxWidth: 480, margin: "0 auto",
       paddingBottom: "env(safe-area-inset-bottom, 0px)",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
         * { box-sizing: border-box; }
-        html { -webkit-text-size-adjust: 100%; }
-        input:focus { border-color: #333 !important; }
+        html { -webkit-text-size-adjust: 100%; background: ${T.bg}; }
+        body { background: ${T.bg}; }
+        input:focus { border-color: ${T.greenBorder} !important; }
         input[type=number]::-webkit-inner-spin-button { opacity: 0; }
         ::-webkit-scrollbar { width: 0; height: 0; }
       `}</style>
@@ -823,20 +841,21 @@ export default function App() {
       {/* Nav bar */}
       <div style={{
         position: "sticky", top: 0, zIndex: 100,
-        background: "#101c14cc", backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        borderBottom: "1px solid #1a2e1e",
+        background: "rgba(243,241,236,0.75)",
+        backdropFilter: "blur(20px) saturate(1.4)",
+        WebkitBackdropFilter: "blur(20px) saturate(1.4)",
+        borderBottom: `1px solid ${T.divider}`,
         padding: "14px 20px", paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)",
         display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#5a9e72" }} />
-          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1, color: "#f2f4f1" }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: T.green }} />
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1, color: T.text }}>
             PHYSIQUE
           </span>
         </div>
         {screen !== "home" && (
-          <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: "#4a6e52", cursor: "pointer", fontSize: 12, letterSpacing: 1 }}>
+          <button onClick={() => setScreen("home")} style={{ background: "none", border: "none", color: T.textSoft, cursor: "pointer", fontSize: 12, letterSpacing: 1, fontWeight: 500 }}>
             ← HOME
           </button>
         )}
