@@ -18,7 +18,7 @@ const PROGRAM = {
         priority: "upper_chest",
         track: ["weight","reps","RIR"],
         cues: ["Shoulders down and back", "No shrugging"],
-        gifSearch: "incline dumbbell press form",
+
         variants: null,
       },
       {
@@ -32,7 +32,7 @@ const PROGRAM = {
         track: ["weight","reps"],
         cues: ["Raise out, not up", "Stop at shoulder height", "Neck relaxed"],
         finisherNote: "Last set: 5–8 top-half partials after full reps",
-        gifSearch: "dumbbell lateral raise shoulder",
+
         variants: [
           { id: "cable", label: "Cable" },
           { id: "dumbbell", label: "Dumbbell" },
@@ -48,7 +48,7 @@ const PROGRAM = {
         priority: "back",
         track: ["weight","reps"],
         cues: ["Depress scapula before pulling", "Avoid neck tension"],
-        gifSearch: "pull up bar exercise form",
+
         variants: [
           { id: "bodyweight", label: "Bodyweight" },
           { id: "weighted", label: "+Weight" },
@@ -66,7 +66,7 @@ const PROGRAM = {
         track: ["reps"],
         cues: ["Shoulder blades into back pockets", "Thumbs up"],
         note: "Technique exercise. Light load only.",
-        gifSearch: "Y raise exercise gym",
+
         variants: null,
       },
       {
@@ -79,7 +79,7 @@ const PROGRAM = {
         priority: "core",
         track: ["reps"],
         cues: ["Curl pelvis upward", "No swinging", "Tailbone toward ribs"],
-        gifSearch: "hanging leg raise exercise",
+
         variants: [
           { id: "legs", label: "Legs" },
           { id: "knees", label: "Knees (reg.)" },
@@ -112,7 +112,7 @@ const PROGRAM = {
         priority: "posterior",
         track: ["weight","reps","RIR"],
         cues: ["Hips back", "Ribs down", "Neutral spine"],
-        gifSearch: "romanian deadlift barbell form",
+
         variants: null,
       },
       {
@@ -125,7 +125,7 @@ const PROGRAM = {
         track: ["weight","reps"],
         cues: ["Slight torso lean", "Push through front heel"],
         note: "Dumbbell-based.",
-        gifSearch: "bulgarian split squat dumbbell glutes",
+
         variants: null,
       },
       {
@@ -137,7 +137,7 @@ const PROGRAM = {
         priority: "rear_delt",
         track: ["weight","reps"],
         cues: ["Pull to forehead", "Slight pull-apart at end", "No shrugging"],
-        gifSearch: "cable face pull exercise",
+
         variants: null,
       },
       {
@@ -150,7 +150,7 @@ const PROGRAM = {
         track: ["weight","reps"],
         cues: ["Open wide", "Do not row", "Chest supported if possible"],
         note: "Preferred: chest-supported.",
-        gifSearch: "rear delt fly chest supported dumbbell",
+
         variants: null,
       },
       {
@@ -163,7 +163,7 @@ const PROGRAM = {
         track: ["duration"],
         cues: ["Squeeze glutes", "Ribs down", "Pull elbows toward toes"],
         note: "If you can hold >45 sec easily, tension is too low.",
-        gifSearch: "RKC plank exercise",
+
         variants: null,
       },
     ],
@@ -326,63 +326,40 @@ const pillStyle = {
   transition: "all 0.15s",
 };
 
-// ─── EXERCISE GIF ─────────────────────────────────────────────────────────────
+// ─── EXERCISE IMAGES ──────────────────────────────────────────────────────────
 
-const GIF_CACHE = {};
+const EXERCISE_IMG_BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises";
+const EXERCISE_IMAGES = {
+  "incline-press": [`${EXERCISE_IMG_BASE}/Incline_Dumbbell_Press/0.jpg`, `${EXERCISE_IMG_BASE}/Incline_Dumbbell_Press/1.jpg`],
+  "lateral-raise": [`${EXERCISE_IMG_BASE}/Cable_Seated_Lateral_Raise/0.jpg`, `${EXERCISE_IMG_BASE}/Cable_Seated_Lateral_Raise/1.jpg`],
+  "pull-ups": [`${EXERCISE_IMG_BASE}/Chin-Up/0.jpg`, `${EXERCISE_IMG_BASE}/Chin-Up/1.jpg`],
+  "prone-y": [`${EXERCISE_IMG_BASE}/Face_Pull/0.jpg`, `${EXERCISE_IMG_BASE}/Face_Pull/1.jpg`],
+  "hanging-leg": [`${EXERCISE_IMG_BASE}/Hanging_Leg_Raise/0.jpg`, `${EXERCISE_IMG_BASE}/Hanging_Leg_Raise/1.jpg`],
+  "rdl": [`${EXERCISE_IMG_BASE}/Barbell_Deadlift/0.jpg`, `${EXERCISE_IMG_BASE}/Barbell_Deadlift/1.jpg`],
+  "bss": [`${EXERCISE_IMG_BASE}/Dumbbell_Lunges/0.jpg`, `${EXERCISE_IMG_BASE}/Dumbbell_Lunges/1.jpg`],
+  "face-pull": [`${EXERCISE_IMG_BASE}/Face_Pull/0.jpg`, `${EXERCISE_IMG_BASE}/Face_Pull/1.jpg`],
+  "rear-delt-fly": [`${EXERCISE_IMG_BASE}/Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench/0.jpg`, `${EXERCISE_IMG_BASE}/Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench/1.jpg`],
+  "rkc-plank": null,
+};
 
-function ExerciseGif({ searchQuery }) {
-  const [gifUrl, setGifUrl] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    if (!searchQuery) return;
-    if (GIF_CACHE[searchQuery]) {
-      setGifUrl(GIF_CACHE[searchQuery]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(false);
-    const encoded = encodeURIComponent(searchQuery);
-    fetch(`https://tenor.googleapis.com/v2/search?q=${encoded}&key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&client_key=physique_app&limit=3`)
-      .then(r => r.json())
-      .then(data => {
-        const results = data?.results;
-        if (results && results.length > 0) {
-          const pick = results[Math.min(1, results.length - 1)];
-          const url = pick.media_formats?.tinygif?.url || pick.media_formats?.gif?.url;
-          if (url) {
-            GIF_CACHE[searchQuery] = url;
-            setGifUrl(url);
-          } else {
-            setError(true);
-          }
-        } else {
-          setError(true);
-        }
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [searchQuery]);
-
-  if (error) return null;
+function ExerciseImage({ exerciseId }) {
+  const images = EXERCISE_IMAGES[exerciseId];
+  if (!images) return null;
 
   return (
     <div style={{
-      width: "100%", borderRadius: 6, overflow: "hidden",
-      marginBottom: 14, background: "#0e1810",
-      aspectRatio: "16/9", display: "flex", alignItems: "center", justifyContent: "center",
-      border: "1px solid #1a2e1e",
+      display: "flex", gap: 8, marginBottom: 14,
     }}>
-      {loading ? (
-        <div style={{ fontSize: 10, color: "#2a3d2e", letterSpacing: 2, textTransform: "uppercase" }}>
-          Loading…
+      {images.map((src, i) => (
+        <div key={i} style={{
+          flex: 1, borderRadius: 6, overflow: "hidden",
+          background: "#0e1810", border: "1px solid #1a2e1e",
+          aspectRatio: "3/4", display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <img src={src} alt={`${exerciseId} position ${i + 1}`}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
-      ) : gifUrl ? (
-        <img src={gifUrl} alt={searchQuery}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-      ) : null}
+      ))}
     </div>
   );
 }
@@ -459,8 +436,8 @@ function ExerciseCard({ ex: exProp, idx }) {
             </div>
           )}
 
-          {/* GIF demo */}
-          {ex.gifSearch && <ExerciseGif searchQuery={ex.gifSearch} />}
+          {/* Exercise demo */}
+          <ExerciseImage exerciseId={ex.id} />
 
           {/* Cues */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
